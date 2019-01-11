@@ -1,5 +1,5 @@
 from util.database.main import drop_temp, update_dataset_years
-from util.fs.main import delete_temp, write_dataset, write_datasets_in_group
+from util.fs.main import delete_input, delete_temp, write_dataset, write_datasets_in_group
 from util.ui.io import create_temp_data, create_temp_bridgepop, update_data, update_bridgepop
 from util.ui.prompt import (prompt_for_confirmation, prompt_for_data_input,
     prompt_for_data_source_input, prompt_for_dataset_input, prompt_for_new_task,
@@ -11,10 +11,12 @@ def __data_manual_input():
     if prompt_for_confirmation('the input data is ready'):
         
         temp_created = create_temp_data()
+
         if not temp_created:
             print("ERROR: Cannot create temporary tables!")
             return False
         else:
+            delete_input()
             if prompt_for_confirmation("the temporary output is as expected"):
                 updated = update_data()
                 if not updated:
@@ -72,7 +74,7 @@ def task_data():
 
     auto = True if data_input == '1' else False
     if auto:
-        group_input = prompt_for_group_input("updating simplecount", auto)
+        group_input = prompt_for_group_input("updating data", auto)
         if group_input == 'b':
             return 'back'
 

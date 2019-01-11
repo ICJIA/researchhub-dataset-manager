@@ -9,7 +9,7 @@ from util.data.ucr import dict_ucr_variable, prepare_ucr_data
 
 from util.database.conn import Conn
 from util.database.main import create_temp, drop_temp, update_table_with_temp
-from util.fs.main import read_data, write_temp
+from util.fs.main import read_data, delete_temp, write_temp
 
 def __read_data_auto(source):
     dict_source = {
@@ -134,6 +134,7 @@ def update_data(source=None):
 
         update_table_with_temp(name_temp, name_perm)
         drop_temp(name_temp)
+        delete_temp()
         return True
     except Exception as e:
         print(e)

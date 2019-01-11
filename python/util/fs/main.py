@@ -11,6 +11,54 @@ from util.fs.fread import get_input_path, get_list_filename
 from util.fs.fwrite import delete_file, write_file
 from util.fs.misc import check_input_format
 
+def delete_template(dirname):
+    """Delete input files in ``@/input``.
+
+    This function deletes input files in ``@/input``. If ``name`` is given,
+    only a file with the given name will be deleted. Otherwise, all files
+    will be deleted. 
+
+    Args:
+        dirname (str): Name of a directory to delete files from.
+    
+    Returns:
+        function:
+
+    """
+    def delete_from_dirname(name=None): 
+        try:
+            if name is None:
+                list_filename = get_list_filename(dirname)
+                for filename in list_filename:
+                    filename = re.sub('\..*', '', filename)
+                    delete_file(dirname, filename)
+                    print(f"NOTE: Successfully removed {filename} from /{dirname}/.")
+            else:
+                delete_file(dirname, name)
+                print(f"NOTE: Successfully removed {name} from /{dirname}/.")
+        except:
+            raise
+    return delete_from_dirname
+
+def delete_input(name_input=None):
+    """Delete input files in ``@/input``.
+
+    This function deletes input files in ``@/input``. If ``name`` is given,
+    only a file with the given name will be deleted. Otherwise, all files
+    will be deleted. 
+
+    Args:
+        name_input (str): Name of a input file to delete. Default is None. If None, all input files will be deleted.
+    
+    Returns:
+        bool: True for success, False otherwise.
+
+    """
+    try:
+        delete_template('input')(name_input)
+    except:
+        raise
+
 def delete_temp(name_temp=None):
     """Delete temporary tables in ``@/temp``.
 
@@ -26,17 +74,7 @@ def delete_temp(name_temp=None):
 
     """
     try:
-        if name_temp is None:
-            list_filename = get_list_filename('temp')
-            for filename in list_filename:
-                filename = re.sub('\..*', '', filename)
-                if is_valid_temp_name(filename):
-                    delete_file('temp', filename)
-                    print(f"NOTE: Successfully removed {filename} from /temp/.")
-        else:
-            if is_valid_temp_name(name_temp):
-                delete_file('temp', name_temp)
-                print(f"NOTE: Successfully removed {name_temp} from /temp/.")
+        delete_template('temp')(name_temp)
     except:
         raise
 
@@ -82,7 +120,7 @@ def write_datasets_in_group(group):
     """Generate all datasets for a provided group."""
     try:
         dataset = read_table('Dataset')
-        out_source = dataset[dataset['group'] == group]
+        out_source = dataset[dataset['grouping'] == group]
         list_dataset_id = out_source['id'].unique().tolist()
         for dataset_id in list_dataset_id:
             write_dataset(dataset_id)
