@@ -153,7 +153,7 @@ def prompt_for_dataset_input(group):
     
     dataset = read_table('Dataset')
     
-    dict_dataset = dataset[dataset['group'] == group] \
+    dict_dataset = dataset[dataset['grouping'] == group] \
         .set_index('id') \
         .to_dict()['name']
 

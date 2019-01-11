@@ -17,7 +17,7 @@ data_colnames = [
 def get_list_dataset_id(group):
     """Get a list of dataset ID values for the specified group."""
     dataset = read_table('Dataset')
-    return dataset[dataset['group'] == group]['id'].tolist()
+    return dataset[dataset['grouping'] == group]['id'].tolist()
 
 def get_list_variable_id(id):
     """Get a list of variable ID values for the specified dataset."""
