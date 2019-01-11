@@ -11,7 +11,7 @@ def __generate_readme_variables_common(standard):
         "- percent_rural (float): Percentage of rural area in a county.\r\n"
     
     if standard:
-        readme += "- population (float): Population estimate.\n"
+        readme += "- population (float): Population estimate.\r\n"
     return readme
 
 def __generate_readme_variable_count(var):
