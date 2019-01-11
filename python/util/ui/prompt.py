@@ -4,8 +4,8 @@ from util.ui.misc import complete_choices, handle_exit, prompt_user
 def prompt_for_task_input():
     """Prompt for user input for a task to carry out and return the task code."""
     msg = "\nChoose the task you want to carry out:" +\
-        "\n- 1 - Update the \"Data\" table in the database." +\
-        "\n- 2 - Update the \"BridgePop\" table in the database." +\
+        "\n- 1 - Update the 'Data' table in the database." +\
+        "\n- 2 - Update the 'BridgePop' table in the database." +\
         "\n- 3 - Generate a dataset/datasets of your choice."
     
     range_choice = range(1,3+1)

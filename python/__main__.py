@@ -8,7 +8,7 @@ def main():
     reset_env(exit=False)
     
     welcome_msg = "\n### WELCOME TO ICJIA WEB DATASET MAINTENANCE TOOL ###" +\
-        "\n\nYou can safely exit this program by typing \"q\" and" +\
+        "\n\nYou can safely exit this program by typing 'q' and" +\
         "  press Enter whenever asked for your input." +\
         "\n***WARNING: Trying to forcibly quit the program might cause" +\
         " unexpected problems.***" +\
