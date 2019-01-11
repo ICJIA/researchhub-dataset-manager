@@ -250,7 +250,7 @@ def __generate_standard_data(dataset, id):
         var = __get_dataset_variable(variable, id)
         type_rate = var['fk_variable_typerate'].iloc[0,]
         type_pop = var['fk_variable_typepop'].iloc[0,]
-        unit_rate = { 1: 100000,  2: 100 }.get(type_rate, 1)
+        unit_rate = { 0: None, 1: 100000,  2: 100 }.get(type_rate, 1)
 
         if type_pop == 'juv':
             pop = __get_population_juvenile()
@@ -262,10 +262,11 @@ def __generate_standard_data(dataset, id):
         list_col = df.columns.tolist()
         df = df[list_col[:7] + [list_col[-1]] + list_col[7:-1]]
         
-        list_val = df.columns.tolist()[10:]
-        for val in list_val:
-            val_rate = round(df[val] / df['population'] * unit_rate, 1)
-            df[f'{val}_rate'] = val_rate
+        if unit_rate:
+            list_val = df.columns.tolist()[10:]
+            for val in list_val:
+                val_rate = round(df[val] / df['population'] * unit_rate, 1)
+                df[f'{val}_rate'] = val_rate
 
         return df
     except:
