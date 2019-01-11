@@ -219,6 +219,25 @@ def __get_population(type_pop):
         print(f"ERROR: Cannot get population for population code: {type_pop}!")
         raise
 
+def __get_population_adult():
+    """Return mixted adult population values."""
+    try:
+        pop_016 = __get_population('016')
+        pop_017 = __get_population('017')
+        pop_all = __get_population('all')
+
+        pop_y_before = pop_016[pop_016['year'] <= 2010]
+        pop_y_after = pop_017[pop_017['year'] > 2010]
+
+        pop_young = pop_y_before.append(pop_y_after, sort=True).reset_index(drop=True)
+        pop_adult = pop_young.merge(pop_all, how='left', on=['id', 'year'])
+        pop_adult['population'] = pop_adult['population_y'] - pop_adult['population_x']
+
+        return pop_adult[['id', 'population', 'year']]
+    except:
+        print("ERROR: Cannot get adult population!")
+        raise
+
 def __get_population_juvenile():
     """Return mixed juvenile population values."""
     try:
@@ -254,6 +273,8 @@ def __generate_standard_data(dataset, id):
 
         if type_pop == 'juv':
             pop = __get_population_juvenile()
+        elif type_pop == 'adt':
+            pop = __get_population_adult()
         else:
             pop = __get_population(type_pop)
 
