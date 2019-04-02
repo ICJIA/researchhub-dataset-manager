@@ -3,7 +3,7 @@ from util.database.dbread import read_table
 def __generate_sources(info):
     """Return a list of metadata dictionaries for sources."""
     
-    source = { 'name': info['source'].iloc[0] }
+    source = { 'title': info['source'].iloc[0] }
     if info['source_url'] is not None:
         source['url'] = info['source_url'].iloc[0]
 
@@ -12,9 +12,9 @@ def __generate_sources(info):
 def __generate_time_period(info):
     """Return a metadata dictionary for time period."""
     return {
-        'year_type': info['year_type'].iloc[0],
-        'year_min': int(info['year_min'].iloc[0]),
-        'year_max': int(info['year_max'].iloc[0])
+        'yeartype': info['year_type'].iloc[0],
+        'yearmin': int(info['year_min'].iloc[0]),
+        'yearmax': int(info['year_max'].iloc[0])
     }
 
 def __generate_metadata_variables_common(standard):
@@ -123,11 +123,11 @@ def __generate_metadata_variables(id, standard):
     except:
         raise
 
-def __parse_list_values(x):
+def __parse_list_values(x, delim=','):
     if x.iloc[0] is None:
         return ['']
     else:
-        list_values = x.iloc[0].split(',')
+        list_values = x.iloc[0].split(delim)
         return [x.strip() for x in list_values]
 
 def generate_metadata(id):
@@ -142,11 +142,13 @@ def generate_metadata(id):
             'date': info['date_updated'].iloc[0],
             'sources': __generate_sources(info),
             'categories': __parse_list_values(info['categories']),
-            'keywords': __parse_list_values(info['keywords']),
-            'timePeriod': __generate_time_period(info),
-            'ageGroup': info['age_group'].iloc[0],
+            'tags': __parse_list_values(info['tags']),
+            'unit': info['unit'].iloc[0],
+            'agegroup': info['age_group'].iloc[0],
+            'timeperiod': __generate_time_period(info),
             'variables': __generate_metadata_variables(id, standard),
-            'description': info['description'].iloc[0]
+            'description': info['description'].iloc[0],
+            'notes': __parse_list_values(info['notes'], '|')
         }
     except:
         raise
