@@ -108,7 +108,7 @@ def write_dataset(id):
         dirpath = 'datasets'
         path = f'{dirpath}/{name}.zip'
         with ZipFile(path, 'w') as z:
-            z.writestr('README.txt', create_readme_txt(id))
+            # z.writestr('README.txt', create_readme_txt(id))
             z.writestr('metadata.json', create_metadata_json(id))
             z.writestr(f'{year_max}_{name}.csv', create_data_csv(id))
         return True
