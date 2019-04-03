@@ -1,4 +1,5 @@
 from util.database.dbread import read_table
+import re
 
 def __generate_sources(info):
     """Return a list of metadata dictionaries for sources."""
@@ -31,14 +32,20 @@ def __generate_metadata_variables_common(standard):
             'definition': 'Location identifier.'
         },
         {
-            'name': 'fips',
+            'name': 'fips_number',
             'type': 'int',
             'definition': 'Federal Information Processing Standard (FIPS) code.'
         },
         {
-            'name': 'county',
+            'name': 'county_name',
             'type': 'str',
             'definition': 'County name.'
+        },
+        {
+            'name': 'judicial circuit',
+            'type': 'str',
+            'definition': 'Judicial circuit cuort number',
+            'values': 'Integers 1 to 23 and "co" for Cook.'
         },
         {
             'name': 'region',
@@ -62,7 +69,7 @@ def __generate_metadata_variables_common(standard):
     
     if standard:
         metadata.append({
-            'name': 'percent_rural',
+            'name': 'population',
             'type': 'int',
             'definition': 'Population estimate.',
             'values': 'Non-negative.'
@@ -76,7 +83,7 @@ def __generate_metadata_variable_count(var):
     definition = var['definition'].iloc[0]
 
     return {
-        'name': f"{name}_rate",
+        'name': name,
         'type': 'int',
         'definition': definition,
         'values': 'Non-negative.'
@@ -117,7 +124,8 @@ def __generate_metadata_variables(id, standard):
         if standard:
             for id_var in list_id_var:
                 var = info_vars[info_vars['id'] == id_var]
-                metadata.append(__generate_metadata_variable_rate(var))
+                if var['fk_variable_typerate'].iloc[0]:
+                    metadata.append(__generate_metadata_variable_rate(var))
 
         return metadata
     except:
@@ -137,8 +145,12 @@ def generate_metadata(id):
         info = dataset[dataset['id'] == id]
         standard = info['standard'].iloc[0] == 1
         
+        slug = re.sub(r'[^\w\s]', '', info['title'].iloc[0])
+        slug = re.sub(r'\s', '-', slug).lower()
+        
         return {
             'title': info['title'].iloc[0],
+            'slug': slug,
             'date': info['date_updated'].iloc[0],
             'sources': __generate_sources(info),
             'categories': __parse_list_values(info['categories']),

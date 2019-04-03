@@ -59,7 +59,7 @@ def __merge_count_county(df, county, variable, id):
         var = __get_dataset_variable(variable, id)
         county['percent_rural'] = county['percent_rural'].round(1)
         col_to_drop1 = ['fk_data_variable', 'id'] 
-        col_to_drop2 = ['fk_data_county', 'judicial_circuit']
+        col_to_drop2 = ['fk_data_county', 'fk_county_typeunit', 'alphabetical_order']
         
         return (
             df
@@ -281,14 +281,14 @@ def __generate_standard_data(dataset, id):
         df = __get_data_with_county(county, data, dataset, variable, id)
         df = df.merge(pop, how='left', on=['year', 'id'])
         list_col = df.columns.tolist()
-        df = df[list_col[:7] + [list_col[-1]] + list_col[7:-1]]
-        
+        df = df[list_col[:8] + [list_col[-1]] + list_col[8:-1]]
+
         if unit_rate:
-            list_val = df.columns.tolist()[10:]
+            list_val = df.columns.tolist()[9:]
             for val in list_val:
                 val_rate = round(df[val] / df['population'] * unit_rate, 1)
                 df[f'{val}_rate'] = val_rate
-
+        
         return df
     except:
         print(f"ERROR: Cannot generate standard type data for dataset ID {dataset}!")
@@ -307,8 +307,8 @@ def __generate_nonstandard_data(dataset, id):
         name = dataset[dataset['id'] == id]['name'].iloc[0]
         
         if name == 'employment':
-            data = read_table('Data')
             county = read_table('County')
+            data = read_table('Data')
             variable = read_table('Variable')
             
             df = __get_data_with_county(county, data, dataset, variable, id)
@@ -316,7 +316,7 @@ def __generate_nonstandard_data(dataset, id):
             df['unemployment_rate'] = df['unemployment_rate'].round(1)
             list_col = df.columns.tolist()
             
-            return df[list_col[:7] + ['labor_force_population', 'employed'] + list_col[9:]]
+            return df[list_col[:8] + ['labor_force_population', 'employed'] + list_col[10:]]
         elif name == 'illinois_population':
             return read_view('vIllinoisPopulation')
         elif name == 'illinois_population_old':
