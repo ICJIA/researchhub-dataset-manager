@@ -10,7 +10,7 @@ def __read_idoc_from_mssql(year):
     try:
         database = 'PrisonMain'
         tbl = 'PrisonAdmits'
-        cols = 'FiscalYr, COMCNTY, SEX, ADMTYPO3, OFFTYPE, OFFTYPE2'
+        cols = 'FiscalYr, COMCNTY, SEX, ADMTYPO3, OFFTYPE2, OFFTYPE3'
         condition = f'FiscalYr = {year}'
 
         return read_mssql(database, tbl, cols, condition)
@@ -30,7 +30,7 @@ def __transform_idoc(df):
         c_sex = df['offtype2'] == 4
         c_drug = df['offtype2'].isin([3.1, 3.2, 3.3, 3.4, 3.5, 3.6])
         c_other = df['offtype2'].isin([0, 3, 5, 7])
-        c_viol = df['offtype'] == 1
+        c_viol = df['offtype3'] == 1
         c_male = df['sex'] == 'M'
         c_female = ~c_male
 
