@@ -135,7 +135,7 @@ def __transform_ucr_school(df, year):
             'batt',
             'aggasslt',
             'assault',
-            'intimidate'
+            'intimidation'
         ]
         df['school'] = df[school_cols].sum(axis=1)
 
