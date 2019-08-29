@@ -50,29 +50,23 @@ def __transform_idoc(df):
         df.columns = ['year', 'fk_data_county'] + df.columns.tolist()[2:]
 
         c_nc, c_heads, c_tails = __get_idoc_criteria(df)
-
-        def helper(c, var, heads):
-            df['fk_data_variable'] = var
-            df = df[c] if c_heads else df[c_nc & c]
- 
-            g = ['fk_data_variable', 'year', 'fk_data_county']
-            
-            return df.groupby(g).size().reset_index(name='value')
-        
         list_variable_id = get_list_variable_id(__id)
 
-        out = pd.DataFrame()
-        for i in range(2):
-            out = out.append(helper(c_heads[i], list_variable_id[i], heads=True))
-            
-        for i in range(len(c_tails)):
-            out = out.append(helper(c_tails[i], list_variable_id[i+2], heads=False))
+        def helper(df, i, heads):
+            return df \
+                .loc[c_heads[i] if heads else c_nc & c_tails[i]] \
+                .assign(fk_data_variable=list_variable_id[i if heads else i+2]) \
+                .groupby(['fk_data_variable', 'year', 'fk_data_county']) \
+                .size() \
+                .reset_index(name='value')
 
-        out = out \
-            .loc[out['fk_data_county'] \
-            .isin(range(1,102+1))]
-        
-        return out[data_colnames]
+        return pd.concat(
+                [helper(df, i, heads=True) for i in range(2)] +
+                [helper(df, i, heads=False) for i in range(len(c_tails))],
+                ignore_index=True
+            ) \
+            .filter(items=data_colnames) \
+            .query('1 <= fk_data_county <= 102')
     except:
         raise
 
@@ -94,8 +88,9 @@ def prepare_idoc_data(year=None):
     """
     try:
         y = get_year_max(__id) + 1 if year is None else year
-        df = __read_idoc_from_mssql(y)
-        
-        return handle_no_record(__transform_idoc(df))
+
+        return __read_idoc_from_mssql(y) \
+            .pipe(__transform_idoc) \
+            .pipe(handle_no_record)
     except:
         raise
