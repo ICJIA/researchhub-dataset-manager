@@ -17,51 +17,56 @@ def __read_idoc_from_mssql(year):
     except:
         raise
 
+def __get_idoc_criteria(df):
+    """Return filtering criteria for transforming a raw IDOC query result."""
+    c_nc = df['admtypo3'] == 1
+    c_tv = df['admtypo3'] == 2
+    c_pers = df['offtype2'] == 1
+    c_prop = df['offtype2'] == 2
+    c_sex = df['offtype2'] == 4
+    c_drug = df['offtype2'].isin([3.1, 3.2, 3.3, 3.4, 3.5, 3.6])
+    c_other = df['offtype2'].isin([0, 3, 5, 7])
+    c_viol = df['offtype3'] == 1
+    c_male = df['sex'] == 'M'
+    c_female = ~c_male
+
+    c_heads = [c_nc, c_tv]
+    c_tails = [
+        c_pers,
+        c_prop,
+        c_sex,
+        c_drug,
+        c_other,
+        c_viol,
+        c_male,
+        c_female
+    ]
+    return c_nc, c_heads, c_tails
+
 def __transform_idoc(df):
     """Transforms a raw IDOC query result into a proper format."""
     try:
         df['comcnty'] = ((df['comcnty'] + 1) / 2).astype(int)
         df.columns = ['year', 'fk_data_county'] + df.columns.tolist()[2:]
 
-        c_nc = df['admtypo3'] == 1
-        c_tv = df['admtypo3'] == 2
-        c_pers = df['offtype2'] == 1
-        c_prop = df['offtype2'] == 2
-        c_sex = df['offtype2'] == 4
-        c_drug = df['offtype2'].isin([3.1, 3.2, 3.3, 3.4, 3.5, 3.6])
-        c_other = df['offtype2'].isin([0, 3, 5, 7])
-        c_viol = df['offtype3'] == 1
-        c_male = df['sex'] == 'M'
-        c_female = ~c_male
+        c_nc, c_heads, c_tails = __get_idoc_criteria(df)
 
-        c_first2 = [c_nc, c_tv]
-        c_others = [
-            c_pers,
-            c_prop,
-            c_sex,
-            c_drug,
-            c_other,
-            c_viol,
-            c_male,
-            c_female
-        ]
-        
-        def helper(c, var, first2, df=df):
+        def helper(c, var, heads):
             df['fk_data_variable'] = var
-            df = df[c] if first2 else df[c_nc & c]
+            df = df[c] if c_heads else df[c_nc & c]
  
             g = ['fk_data_variable', 'year', 'fk_data_county']
             
             return df.groupby(g).size().reset_index(name='value')
-
-        list_variable_id = get_list_variable_id(__id)
         
+        list_variable_id = get_list_variable_id(__id)
+
         out = pd.DataFrame()
         for i in range(2):
-            out = out.append(helper(c_first2[i], list_variable_id[i], first2=True))
+            out = out.append(helper(c_heads[i], list_variable_id[i], heads=True))
             
-        for i in range(len(c_others)):
-            out = out.append(helper(c_others[i], list_variable_id[i+2], first2=False))
+        for i in range(len(c_tails)):
+            out = out.append(helper(c_tails[i], list_variable_id[i+2], heads=False))
 
         out = out \
             .loc[out['fk_data_county'] \

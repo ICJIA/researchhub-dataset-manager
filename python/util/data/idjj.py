@@ -34,34 +34,53 @@ def __get_list_variable_id_idjj(exit, older):
     dataset_id = dict_dataset_id[(older, exit)]
     return get_list_variable_id(dataset_id)
 
+def __get_idjj_criteria(df, older):
+    """Return filtering criteria for transforming a raw IDJJ query result."""
+    c_age = df['age'].isin(range(17, 20+1) if older else range(13, 16+1))
+    c_new = df['admtypo'].isin(['CE', 'CER', 'DR', 'IC', 'MVN', 'PVN', 'RAM'])
+    c_ce = df['admtypo'] == 'CE'
+    c_tv = df['admtypo'].isin(['TMV', 'TPV'])
+    c_male = df['sex'] == 'M'
+    c_female = ~c_male
+    c_whi = df['race'] == 'WHI'
+    c_blk = df['race'] == 'BLK'
+    c_hsp = df['race'] == 'HSP'
+    c_pers = df['offtype9'] == 1
+    c_prop = df['offtype9'] == 2
+    c_drug = df['offtype9'] == 3
+    c_weap = df['offtype9'] == 4
+    c_sex = df['offtype9'] == 5
+    c_felo = df['hclass'].isin(['M','X',1,2,3,4])
+    c_misd = ~c_felo
+
+    c_heads = [c_new, c_ce, c_tv]
+    c_tails = [
+        c_male,
+        c_female,
+        c_whi,
+        c_blk,
+        c_hsp,
+        c_pers,
+        c_prop,
+        c_drug,
+        c_weap,
+        c_sex,
+        c_felo,
+        c_misd
+    ]
+    
+    return c_age, c_new, c_heads, c_tails
+
 def __transform_idjj(df, exit=False, older=False):
     """Transform the specificed IDJJ data."""
     try:
         df.columns = ['age', 'year', 'fk_data_county'] + df.columns.tolist()[3:]
 
-        c_age = df['age'].isin(range(17, 20+1) if older else range(13, 16+1))
-        c_new = df['admtypo'].isin(['CE', 'CER', 'DR', 'IC', 'MVN', 'PVN', 'RAM'])
-        c_ce = df['admtypo'] == 'CE'
-        c_tv = df['admtypo'].isin(['TMV', 'TPV'])
-        c_male = df['sex'] == 'M'
-        c_female = ~c_male
-        c_whi = df['race'] == 'WHI'
-        c_blk = df['race'] == 'BLK'
-        c_hsp = df['race'] == 'HSP'
-        c_pers = df['offtype9'] == 1
-        c_prop = df['offtype9'] == 2
-        c_drug = df['offtype9'] == 3
-        c_weap = df['offtype9'] == 4
-        c_sex = df['offtype9'] == 5
-        c_felo = df['hclass'].isin(['M','X',1,2,3,4])
-        c_misd = ~c_felo
-
-        c_first3 = [c_new, c_ce, c_tv]
-        c_others = [c_male, c_female, c_whi, c_blk, c_hsp, c_pers, c_prop, c_drug, c_weap, c_sex, c_felo, c_misd]
+        c_age, c_new, c_heads, c_tails = __get_idjj_criteria(df, older)
         
-        def helper(c, var, first3):
+        def helper(c, var, heads):
             df['fk_data_variable'] = var
-            df = df[c_age & c] if first3 else df[c_age & c_new & c]
+            df = df[c_age & c] if heads else df[c_age & c_new & c]
             
             g = ['fk_data_variable', 'year', 'fk_data_county']
             
@@ -71,10 +90,10 @@ def __transform_idjj(df, exit=False, older=False):
         
         out = pd.DataFrame()
         for i in range(3):
-            out = out.append(helper(c_first3[i], list_variable_id[i], first3=True))
+            out = out.append(helper(c_heads[i], list_variable_id[i], heads=True))
             
-        for i in range(len(c_others)):
-            out = out.append(helper(c_others[i], list_variable_id[i+3], first3=False))
+        for i in range(len(c_tails)):
+            out = out.append(helper(c_tails[i], list_variable_id[i+3], heads=False))
         
         out = out.loc[out['fk_data_county'].isin(range(1,102+1))]
         
