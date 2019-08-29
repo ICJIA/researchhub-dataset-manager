@@ -12,10 +12,9 @@ def __filter_illinois(df):
     """Filter to keep bridgepop estimates for Illinois only."""
     pat = f'^\d{{{df["raw_value"].str.len().max() - 17}}}17'
     
-    return (
-        df[df['raw_value'].str.contains(pat)]
-            .reset_index(drop=True)    
-    )
+    return df \
+        .loc[df["raw_value"].str.contains(pat)] \
+        .reset_index(drop=True)
 
 def __extract_from_res(res):
     """Extract bridgepop data from http response."""
@@ -23,10 +22,10 @@ def __extract_from_res(res):
         zip = ZipFile(BytesIO(res.content))
         
         return pd.read_table(
-                    zip.open(zip.namelist()[0]),
-                    header=None,
-                    names=['raw_value']
-                )
+                zip.open(zip.namelist()[0]),
+                header=None,
+                names=['raw_value']
+            )
     except:
         raise
 
@@ -61,22 +60,23 @@ def __transform_bridgepop(df):
 
     Returns:
         pandas.DataFrame: Transformed data in the proper format.
-    
     """
     try:
         ix = df['raw_value'].str.len().max() - 15
-        fips_to_icjia_num = lambda x: (int(x) + 1)/2
+        apply = lambda x, f: x['raw_value'].apply(f)
+        fips_to_county_id = lambda s: (int(s[ix:ix+3]) + 1) / 2
 
-        df['fk_bridgepop_county'] = df['raw_value'] \
-            .apply(lambda x: x[ix:ix+3]) \
-            .apply(fips_to_icjia_num)
-        df['year'] = df['raw_value'].apply(lambda x: x[:4])
-        df['age'] = df['raw_value'].apply(lambda x: x[ix+3:ix+5])
-        df['race_gender'] = df['raw_value'].apply(lambda x: x[ix+5])
-        df['hispanic'] = df['raw_value'].apply(lambda x: x[ix+6])
-        df['value'] = df['raw_value'].apply(lambda x: x[ix+7:])
-        
-        return df.iloc[:, 1:].astype(int)
+        return df \
+            .assign(
+                year=lambda x: apply(x, lambda s: s[4:8]),
+                fk_bridgepop_county=lambda x: apply(x, fips_to_county_id),
+                age=lambda x: apply(x, lambda s: s[ix+3:ix+5]),
+                race_gender=lambda x: apply(x, lambda s: s[ix+5]),
+                hispanic=lambda x: apply(x, lambda s: s[ix+6]),
+                value=lambda x: apply(x, lambda s: s[ix+7:])
+            ) \
+            .drop(['raw_value'], axis=1) \
+            .astype(int)
     except:
         raise
 
@@ -91,14 +91,12 @@ def prepare_bridgepop_data(year=None):
         y = v - 2000
         y_range = range(y - (y % 10), y + 1)
 
-        out = pd.DataFrame()
-        for y_i in y_range:
-            try:
-                url = __build_url(v, y_i)
-                out = out.append(__fetch_from_url(url))
-            except:
-                raise
+        list_res = [__fetch_from_url(__build_url(v, y)) for y in y_range]
 
-        return __transform_bridgepop(out)
+        return pd.concat(
+                [__filter_illinois(__extract_from_res(r)) for r in list_res],
+                ignore_index=True
+            )\
+            .pipe(__transform_bridgepop)
     except:
         raise
