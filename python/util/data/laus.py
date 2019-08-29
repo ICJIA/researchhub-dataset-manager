@@ -16,10 +16,24 @@ def __fetch_laus_from_url(year):
     except:
         raise
 
+def __pivot_laus_variable(df, value_vars):
+    try:
+        return pd.melt(
+            df,
+            id_vars=['fips', 'year'],
+            value_vars=value_vars,
+            var_name='fk_data_variable'
+        )
+    except:
+        raise
+
 def __transform_laus(df):
     """Transform LAUS data into the proper format."""
     try:
-        df.columns = [
+        list_variable_id = [str(id) for id in get_list_variable_id(__id)]
+        c_has_fips = df['fips'].na()
+        c_month_13 = df['month'] == 13
+        colnames = [
             'fips',
             'area',
             'year',
@@ -29,21 +43,16 @@ def __transform_laus(df):
             'unemployed',
             'rate'
         ]
-        df = df[(~df.fips.isna()) & (df.month == 13)]
-        df = df.drop(columns=['area', 'month', 'rate'])
-        
-        list_variable_id = [str(id) for id in get_list_variable_id(__id)]
-        
-        df.columns = ['fips', 'year'] + list_variable_id
-        df = pd.melt(
-            df,
-            id_vars=['fips', 'year'],
-            value_vars=list_variable_id,
-            var_name='fk_data_variable'
-        )
-        df['fk_data_county'] = (df['fips'] + 1) / 2
-        
-        return df[data_colnames]
+        colnames2 = ['fips', 'year'] + list_variable_id
+
+        return df \
+            .set_axis(colnames, axis='columns', inplace=False) \
+            .loc[c_has_fips & c_month_13] \
+            .drop(columns=['area', 'month', 'rate']) \
+            .set_axis(colnames2, axis='columns', inplace=False) \
+            .pipe(__pivot_laus_variable, value_vars=list_variable_id) \
+            .assign(fk_data_county=lambda x: (x.fips + 1) / 2) \
+            .filter(items=data_colnames)
     except:
         raise
 
@@ -65,8 +74,8 @@ def prepare_laus_data(year=None):
     """
     try:
         y = get_year_max(__id) + 1 if year is None else year
-        df = __fetch_laus_from_url(y)
-        
-        return __transform_laus(df)
+
+        return __fetch_laus_from_url(y) \
+            .pipe(__transform_laus)
     except:
         raise
