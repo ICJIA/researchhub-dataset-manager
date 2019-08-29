@@ -18,24 +18,23 @@ def __read_chri_from_mssql(year):
 def __transform_chri(df):
     """Transforms a raw CHRI query result into a proper format."""
     try:
-        df['year'] = df['arrestyear']
-        df['county'] = df['eventori'].str[2:5].replace('CPD', '016')
-        df = df[df['county'].str.contains('\d{3}')].copy()
-        df.loc[:, 'fk_data_county'] = df['county'].astype(int)
+        filter_county = lambda x: x[x['county'].str.contains('\d{3}')]
 
-        c = df['arrestage'].isin(range(10,17+1))
-        df.loc[:,'fk_data_variable'] = get_list_variable_id(__id)[0]
-        g = ['fk_data_variable', 'year', 'fk_data_county']
-        
-        df = df[c] \
-            .groupby(g) \
+        return df \
+            .assign(county=lambda x: x.eventori.str[2:5].replace('CPD', '016')) \
+            .pipe(filter_county) \
+            .query('10 <= arrestage <= 17') \
+            .assign(
+                fk_data_variable=get_list_variable_id(__id)[0],
+                year=lambda x: x.arrestyear,
+                fk_data_county=lambda x: x.county.astype(int)
+            ) \
+            .groupby(['fk_data_variable', 'year', 'fk_data_county']) \
             .size() \
-            .reset_index(name='value')
-            
-        return df[data_colnames]
+            .reset_index(name='value') \
+            .filter(items=data_colnames)
     except:
         raise
-
 
 def prepare_chri_data(year=None):
     """Return the next year's CHRI data in the proper format.
@@ -54,8 +53,9 @@ def prepare_chri_data(year=None):
     """
     try:
         y = get_year_max(__id) + 1 if year is None else year
-        df = __read_chri_from_mssql(y)
         
-        return handle_no_record(__transform_chri(df))
+        return __read_chri_from_mssql(y) \
+            .pipe(__transform_chri) \
+            .pipe(handle_no_record)
     except:
         raise
