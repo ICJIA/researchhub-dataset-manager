@@ -79,6 +79,9 @@ def __rename_cols(x, year):
 def __select_cols(x):
     return not re.search('\d', x)
 
+def __standardize_county(df):
+    return df.assign(county=df['county'].str.lower().str.replace(' ', ''))
+
 def __transform_ucr_helper(df, year):
     """Help to transform UCR data."""
     try:
@@ -89,6 +92,7 @@ def __transform_ucr_helper(df, year):
                 df
                 .rename(columns=rename_cols)
                 .loc[:, df.rename(columns=rename_cols).columns.map(__select_cols)]
+                .pipe(__standardize_county)
                 .assign(year=year)
                 .iloc[:102, ]
             )
@@ -135,7 +139,7 @@ def __transform_ucr_school(df, year):
         ]
         df['school'] = df[school_cols].sum(axis=1)
 
-        return df[['county', 'school']]
+        return __standardize_county(df[['county', 'school']])
     except:
         raise
 
@@ -167,11 +171,7 @@ def __prepare_info_ucr(year):
             .merge(hate, how='left') \
             .merge(school, how='left')
         
-        df['county'] = df['county'] \
-            .str.lower() \
-            .str.replace(' ', '')
-        
-        return df
+        return __standardize_county(df)
     except:
         raise
 
