@@ -46,10 +46,8 @@ def __fetch_from_url(v, y):
         pandas.DataFrame: Single year bridgepop estimates for Illinois.
     
     """
-    if y % 10 == 0:
-        target = f'pcen_v{v}_y{y}_jul.txt.zip'
-    else:
-        target = f'pcen_v{v}_y{y}.txt.zip'
+    jul_if_year_zero = '_jul' if y % 10 == 0 else ''
+    target = f'pcen_v{v}_y{y}{jul_if_year_zero}.txt.zip'
     
     url = f'https://ftp.cdc.gov/pub/health_statistics/nchs/Datasets/NVSS/bridgepop/{v}/{target}'
     
@@ -96,10 +94,7 @@ def prepare_bridgepop_data(year=None):
         pandas.DataFrame: BridgePop data for Illinois in the original format.
     """
     try:
-        if year is None:
-            year = get_year_max(__id) + 1
-
-        v = year + 1
+        v = get_year_max(__id) + 1 if year is None else year
         y = v - 2000
         y_range = range(y - (y % 10), y + 1)
 

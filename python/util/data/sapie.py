@@ -61,10 +61,9 @@ def prepare_poverty_data(year=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id_total) + 1
-        df = __fetch_poverty_from_url(year)
+        y = get_year_max(__id_total) + 1 if year is None else year
+        df = __fetch_poverty_from_url(y)
         
-        return __transform_poverty(df, year)
+        return __transform_poverty(df, y)
     except:
         raise

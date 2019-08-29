@@ -93,9 +93,8 @@ def prepare_idoc_data(year=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id) + 1
-        df = __read_idoc_from_mssql(year)
+        y = get_year_max(__id) + 1 if year is None else year
+        df = __read_idoc_from_mssql(y)
         
         return handle_no_record(__transform_idoc(df))
     except:

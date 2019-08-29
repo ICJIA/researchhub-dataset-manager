@@ -106,10 +106,9 @@ def prepare_jail_data(year=None, booking_val=None, adp_val=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id) + 1
-        df = __read_jail_from_disk(year)
+        y = get_year_max(__id) + 1 if year is None else year
+        df = __read_jail_from_disk(y)
         
-        return __transform_jail(df, year, booking_val, adp_val)
+        return __transform_jail(df, y, booking_val, adp_val)
     except:
         raise

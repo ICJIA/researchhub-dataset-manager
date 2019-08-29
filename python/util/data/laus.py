@@ -64,9 +64,8 @@ def prepare_laus_data(year=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id) + 1
-        df = __fetch_laus_from_url(year)
+        y = get_year_max(__id) + 1 if year is None else year
+        df = __fetch_laus_from_url(y)
         
         return __transform_laus(df)
     except:

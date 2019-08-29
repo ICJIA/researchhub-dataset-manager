@@ -74,10 +74,7 @@ def __fetch_ucr_from_url(which, year):
         raise
 
 def __rename_cols(x, year):
-    if x[-2:] == str(year)[2:]:
-        return x[:-2].lower()
-    else:
-        return x.lower()
+    return x[:-2].lower() if x[-2:] == str(year)[2:] else x.lower()
 
 def __select_cols(x):
     return not re.search('\d', x)
@@ -245,13 +242,12 @@ def prepare_ucr_data(year=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id_index) + 1
+        y = get_year_max(__id_index) + 1 if year is None else year
         
-        info_ucr = __prepare_info_ucr(year)
+        info_ucr = __prepare_info_ucr(y)
         info_county = __prepare_info_county(read_table('County'))
         info = __merge_info(info_ucr, info_county)
-        info = __drop_bad_school_rows(info, year)
+        info = __drop_bad_school_rows(info, y)
 
         return __convert_variable_name_to_code(info)
     except:

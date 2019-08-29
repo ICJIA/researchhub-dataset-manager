@@ -13,10 +13,8 @@ def __read_idjj_from_mssql(year, exit=False):
         database = 'PrisonMain'
         tbl = 'IDJJ_exits' if exit else 'IDJJ_Admissions'
         cols = 'Age, SFY, County, sex, race, admtypo, OFFTYPE9, hclass'
+        cols = 'Exit' + cols if exit else cols
         condition = f'SFY = {year}'
-
-        if exit:
-            cols = 'Exit' + cols
 
         return read_mssql(database, tbl, cols, condition)
     except:
@@ -131,10 +129,9 @@ def prepare_idjj_data(year=None):
 
     """
     try:
-        if year is None:
-            year = get_year_max(__id_admit) + 1
-        df_a = __read_idjj_from_mssql(year)
-        df_e = __read_idjj_from_mssql(year, exit=True)
+        y = get_year_max(__id_admit) + 1 if year is None else year
+        df_a = __read_idjj_from_mssql(y)
+        df_e = __read_idjj_from_mssql(y, exit=True)
         
         return handle_no_record(__transform_and_combine_idjj(df_a, df_e))
     except:
