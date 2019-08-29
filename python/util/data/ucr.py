@@ -221,6 +221,14 @@ def __convert_variable_name_to_code(df):
     except:
         raise
 
+def __drop_bad_school_rows(df, year):
+    """Drop previous year's school rows which were not provided."""
+    try:
+        c_drop = (df['year'] == year - 1) & (df['fk_data_variable'] == 'school')
+        return df.drop(df[c_drop].index)
+    except:
+        raise
+
 def prepare_ucr_data(year=None):
     """Return the next year's UCR data in the proper format.
     
@@ -243,6 +251,7 @@ def prepare_ucr_data(year=None):
         info_ucr = __prepare_info_ucr(year)
         info_county = __prepare_info_county(read_table('County'))
         info = __merge_info(info_ucr, info_county)
+        info = __drop_bad_school_rows(info, year)
 
         return __convert_variable_name_to_code(info)
     except:
