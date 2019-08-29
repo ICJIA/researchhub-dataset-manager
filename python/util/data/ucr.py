@@ -52,7 +52,16 @@ dict_ucr_variable = {
     'school':50700,
 }
 
-def __fetch_ucr_from_url(which, year):
+def __fetch_ucr_from_url(url):
+    """Fetch from online the given year's UCR data."""
+    try:
+        return pd.read_excel(url)
+    except XLRDError:
+        raise CannotUpdateError("ERROR: Uniform Crime Report data is already up to date!")
+    except:
+        raise
+
+def __fetch_ucr_for_year(year, which):
     """Fetch from online the given year's UCR data."""
     try:
         yy = str(year)[2:]
@@ -65,19 +74,21 @@ def __fetch_ucr_from_url(which, year):
             'school': 'SchoolIncidents'
         }
 
-        filename = f'{dict_which[which]}_{yy}_{yy_pre}'
-        url = f'http://www.isp.state.il.us/docs/cii/cii{yy}/ds/{filename}.xlsx'
-        return pd.read_excel(url)
-    except XLRDError:
-        raise CannotUpdateError("ERROR: Uniform Crime Report data is already up to date!")
+        filename = f'{dict_which[which]}_{yy}_{yy_pre}.xlsx'
+        url = f'http://www.isp.state.il.us/docs/cii/cii{yy}/ds/{filename}'
+
+        return __fetch_ucr_from_url(url)
     except:
         raise
 
-def __rename_cols(x, year):
-    return x[:-2].lower() if x[-2:] == str(year)[2:] else x.lower()
+def __select_of_year(df, year):
+    """Select columns to keep values of the given year only."""
+    def rename_cols(x):
+        return x[:-2].lower() if x[-2:] == str(year)[2:] else x.lower()
 
-def __select_cols(x):
-    return not re.search('\d', x)
+    return df \
+        .rename(columns=rename_cols) \
+        .filter(regex='^[A-Za-z_-]*$', axis=1)
 
 def __standardize_county(df):
     return df.assign(county=df['county'].str.lower().str.replace(' ', ''))
@@ -86,17 +97,12 @@ def __transform_ucr_helper(df, year):
     """Help to transform UCR data."""
     try:
         def helper(df, year):
-            rename_cols = lambda x: __rename_cols(x, year)
-            
-            return (
-                df
-                .rename(columns=rename_cols)
-                .loc[:, df.rename(columns=rename_cols).columns.map(__select_cols)]
-                .pipe(__standardize_county)
-                .assign(year=year)
+            return df \
+                .pipe(__select_of_year, year) \
+                .pipe(__standardize_county) \
+                .assign(year=year) \
                 .iloc[:102, ]
-            )
-        
+
         return pd.concat([helper(df, year), helper(df, year - 1)])
     except:
         raise
@@ -107,7 +113,8 @@ def __transform_ucr_index(df, year):
         df = __transform_ucr_helper(df, year) \
             .drop(['aindex', 'arate'], axis=1)
         
-        return pd.concat([
+        return pd.concat(
+            [
                 df.loc[:, ['year', 'county']],
                 df.loc[:, 'ch':'ahtserve'],
                 df.loc[:, 'acca':'ameth']
@@ -120,14 +127,6 @@ def __transform_ucr_index(df, year):
 def __transform_ucr_school(df, year):
     """Transform UCR data for school incidents."""
     try:
-        rename_cols = lambda x: __rename_cols(x, year)
-        
-        df = df.rename(columns=rename_cols)
-        df = df.loc[:, df.columns.map(__select_cols)] \
-            .drop('agency_name', axis=1) \
-            .groupby('county', as_index=False) \
-            .sum()
-
         school_cols = [
             'ch',
             'csa',
@@ -137,12 +136,19 @@ def __transform_ucr_school(df, year):
             'assault',
             'intimidation'
         ]
-        df['school'] = df[school_cols].sum(axis=1)
 
-        return __standardize_county(df[['county', 'school']])
+        return df \
+            .pipe(__select_of_year, year) \
+            .drop(['ori', 'agency_name'], axis=1) \
+            .groupby(['year', 'county']) \
+            .sum() \
+            .filter(items=school_cols) \
+            .assign(school=lambda x: x.sum(axis=1, numeric_only=True)) \
+            .filter(items=['school']) \
+            .reset_index() \
+            .pipe(__standardize_county)
     except:
         raise
-
 
 def __transform_ucr(year, which):
     """Transform the specificed UCR data."""
@@ -153,8 +159,9 @@ def __transform_ucr(year, which):
         }
 
         transformer = dict_transformer.get(which, __transform_ucr_helper)
-        df = __fetch_ucr_from_url(which, year)
-        return transformer(df, year)
+
+        return __fetch_ucr_for_year(year, which) \
+            .pipe(transformer, year)
     except:
         raise
 
@@ -166,55 +173,37 @@ def __prepare_info_ucr(year):
         hate = __transform_ucr(year, 'hate')
         school = __transform_ucr(year, 'school')
 
-        df = index \
+        return index \
             .merge(domestic, how='left') \
             .merge(hate, how='left') \
             .merge(school, how='left')
-        
-        return __standardize_county(df)
     except:
         raise
 
 def __prepare_info_county(df):
     """Prepare county information to merge."""
     try:
-        df = df.loc[:103, ['id', 'county_name']]
-        
-        df['county_name'] = df['county_name'] \
-            .str.lower() \
-            .str.replace(' ', '')
-        
-        df.columns = ['fk_data_county', 'county']
-
-        return df
+        return df \
+            .assign(
+                fk_data_county=lambda x: x.id,
+                county=lambda x: x.county_name
+            ) \
+            .loc[:103, ['fk_data_county', 'county']] \
+            .pipe(__standardize_county)
     except:
         raise
 
 def __merge_info(info_ucr, info_county):
     """Combine UCR and County information."""
     try:
-        df = pd.melt(
-            info_ucr.merge(info_county, how='left'),
-            id_vars=['year', 'county', 'fk_data_county'],
-            var_name='fk_data_variable',
-            value_name='value'
-        )
-        
-        df['value'] = pd.to_numeric(df['value'], errors='coerce')
-        
-        return df[data_colnames]
-    except:
-        raise
-
-def __convert_variable_name_to_code(df):
-    """Convert UCR variable names to their code values."""
-    try:
-        return (
-           df
-            .replace({'fk_data_variable': dict_ucr_variable})
-            .sort_values(by=['year', 'fk_data_variable', 'fk_data_county'])
-            .reset_index(drop=True)
-        )
+        return pd.melt(
+                info_ucr.merge(info_county, how='left'),
+                id_vars=['year', 'county', 'fk_data_county'],
+                var_name='fk_data_variable',
+                value_name='value'
+            )   \
+            .assign(value=lambda x: pd.to_numeric(x.value, errors='coerce')) \
+            .filter(items=data_colnames)
     except:
         raise
 
@@ -244,11 +233,13 @@ def prepare_ucr_data(year=None):
     try:
         y = get_year_max(__id_index) + 1 if year is None else year
         
-        info_ucr = __prepare_info_ucr(y)
-        info_county = __prepare_info_county(read_table('County'))
-        info = __merge_info(info_ucr, info_county)
-        info = __drop_bad_school_rows(info, y)
-
-        return __convert_variable_name_to_code(info)
+        return __merge_info(
+                info_ucr=__prepare_info_ucr(y),
+                info_county=__prepare_info_county(read_table('County'))
+            ) \
+            .pipe(__drop_bad_school_rows, y) \
+            .replace({'fk_data_variable': dict_ucr_variable}) \
+            .sort_values(by=['year', 'fk_data_variable', 'fk_data_county']) \
+            .reset_index(drop=True)
     except:
         raise
