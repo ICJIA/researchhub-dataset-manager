@@ -49,9 +49,9 @@ def __fetch_from_url(v, y):
     jul_if_year_zero = '_jul' if y % 10 == 0 else ''
     target = f'pcen_v{v}_y{y}{jul_if_year_zero}.txt.zip'
     
-    url = f'https://ftp.cdc.gov/pub/health_statistics/nchs/Datasets/NVSS/bridgepop/{v}/{target}'
+    url = f'https://www.cdc.gov/nchs/nvss/bridged_race/{target}'
     
-    res = requests.get(url, verify=False)
+    res = requests.get(url)
     
     if res.status_code == 200:
         return __filter_illinois(__extract_from_res(res))
