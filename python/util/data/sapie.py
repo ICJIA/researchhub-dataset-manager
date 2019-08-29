@@ -19,28 +19,52 @@ def __fetch_poverty_from_url(year):
             raise ValueError("ERROR: Poverty data is already up to date!")
     except:
         raise
- 
+
+def __get_list_variable_id():
+    try:
+        total = get_list_variable_id(__id_total)
+        minor = get_list_variable_id(__id_minor)
+        return [str(id) for id in total + minor]
+    except:
+        raise
+
+def __extract_variables(df):
+    try:
+        pattern = '.{3}(?P<fips>.{3}).(?P<all>.{8}).{34}(?P<minor>.{8}).*'
+        return df['raw'].str.extract(pattern)
+    except:
+        raise
+
+def __pivot_poverty_variable(df, value_vars):
+    try:
+        return pd.melt(
+            df,
+            id_vars=['fk_data_county', 'year'],
+            value_vars=value_vars,
+            var_name='fk_data_variable'
+        )
+    except:
+        raise
+
 def __transform_poverty(df, year):
     """Transform poverty data into the proper format."""
     try:
-        pattern = '.{3}(?P<fips>.{3}).(?P<all>.{8}).{34}(?P<minor>.{8}).*'
-        df = df['raw'].str.extract(pattern)
-        df['year'] = year
-        df['fips'] = df['fips'].astype(int) + 1 / 2
+        list_variable_id = __get_list_variable_id()
         
-        list_variable_id_total = [str(id) for id in get_list_variable_id(__id_total)]
-        list_variable_id_minor = [str(id) for id in get_list_variable_id(__id_minor)]
-        list_variable_id = list_variable_id_total + list_variable_id_minor
-        
-        df.columns = ['fk_data_county'] + list_variable_id + ['year']
-        df = pd.melt(
-            df.astype(int),
-            id_vars=['fk_data_county', 'year'],
-            value_vars=list_variable_id,
-            var_name='fk_data_variable'
-        )
-
-        return df[data_colnames]
+        return df \
+            .pipe(__extract_variables) \
+            .assign(
+                fips=lambda x: (x.fips.astype(int) + 1) / 2,
+                year=year
+            ) \
+            .set_axis(
+                ['fk_data_county'] + list_variable_id + ['year'],
+                axis='columns',
+                inplace=False
+            ) \
+            .astype(int) \
+            .pipe(__pivot_poverty_variable, value_vars=list_variable_id) \
+            .filter(items=data_colnames)
     except:
         raise
 
@@ -62,8 +86,8 @@ def prepare_poverty_data(year=None):
     """
     try:
         y = get_year_max(__id_total) + 1 if year is None else year
-        df = __fetch_poverty_from_url(y)
-        
-        return __transform_poverty(df, y)
+
+        return __fetch_poverty_from_url(y) \
+            .pipe(__transform_poverty, y)
     except:
         raise
