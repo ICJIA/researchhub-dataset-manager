@@ -35,9 +35,9 @@ def __get_dataset_data(data, variable, id):
     try:
         var = __get_dataset_variable(variable, id)
         
-        filter1 = data['fk_data_variable'].isin(var['id'].tolist())
-        filter2 = data['fk_data_county'].isin(list(range(103)))
-        return data[filter1 & filter2]
+        c_variable = data['fk_data_variable'].isin(var['id'].tolist())
+        c_county = data['fk_data_county'].isin(list(range(103)))
+        return data[c_variable & c_county]
     except:
         print(f'ERROR: Failed to filter Data for dataset ID {id}')
         raise
@@ -61,23 +61,21 @@ def __merge_count_county(df, county, variable, id):
         col_to_drop1 = ['fk_data_variable', 'id'] 
         col_to_drop2 = ['fk_data_county', 'fk_county_typeunit', 'alphabetical_order']
         
-        return (
-            df
+        return df \
             .merge(
                 var[['id', 'name']],
                 how='left',
                 left_on='fk_data_variable',
                 right_on='id'
-            )
-            .drop(col_to_drop1, axis=1)
+            ) \
+            .drop(col_to_drop1, axis=1) \
             .merge(
                 county,
                 how='left',
                 left_on='fk_data_county',
                 right_on='id'
-            )
+            ) \
             .drop(col_to_drop2, axis=1)
-        )
     except:
         print('ERROR: Cannot merge additional information to filtered Data table!')
         raise
@@ -160,15 +158,13 @@ def __get_population_new(type_pop):
         else:
             raise ValueError("ERROR: Invalid population code!")
         
-        return (
-            pop
-            .groupby(['year', 'fk_bridgepop_county'])
-            .value
-            .agg('sum')
-            .reset_index()
-            .sort_values(by='fk_bridgepop_county', kind='mergesort')
+        return pop \
+            .groupby(['year', 'fk_bridgepop_county']) \
+            .value \
+            .agg('sum') \
+            .reset_index() \
+            .sort_values(by='fk_bridgepop_county', kind='mergesort') \
             .sort_values(by='year', ascending=False, kind='mergesort')
-        )
     except:
         print("ERROR: Cannot aggregate population!")
         raise
@@ -184,16 +180,16 @@ def __get_population_old(type_pop):
     """
     try:
         bridge_pop_old = read_table('BridgePopOld')
+        c_type_pop = bridge_pop_old['fk_bridgepop_typepop'] == type_pop
+        c_pre_2000 = bridge_pop_old['year'] < 2000
+        c_county = bridge_pop_old['fk_bridgepop_county'] < 103
 
-        return (
-            bridge_pop_old[
-                (bridge_pop_old['fk_bridgepop_typepop'] == type_pop) &
-                (bridge_pop_old['year'] < 2000) &
-                (bridge_pop_old['fk_bridgepop_county'] < 103)]
-            .drop('fk_bridgepop_typepop', axis=1)
-            .sort_values(by='fk_bridgepop_county', kind='mergesort')
+        return bridge_pop_old \
+            .loc[c_type_pop & c_pre_2000 & c_county] \
+            .drop('fk_bridgepop_typepop', axis=1) \
+            .sort_values(by='fk_bridgepop_county', kind='mergesort') \
             .sort_values(by='year', ascending=False, kind='mergesort')
-        )
+    
     except:
         print(f"ERROR: Cannot get population for population code: {type_pop}!")
         raise
@@ -210,11 +206,14 @@ def __get_population(type_pop):
     try:
         pop_new = __get_population_new(type_pop)
         pop_old = __get_population_old(type_pop)
-        
-        pop = pop_new.append(pop_old, sort=True)
-        pop.columns = ['id', 'population', 'year']
-        
-        return pop.reset_index(drop=True)
+
+        return pd.concat([pop_new, pop_old], sort=True) \
+            .set_axis(
+                ['id', 'population', 'year'],
+                axis='columns',
+                inplace=False
+            ) \
+            .reset_index(drop=True)
     except:
         print(f"ERROR: Cannot get population for population code: {type_pop}!")
         raise
@@ -229,11 +228,11 @@ def __get_population_adult():
         pop_y_before = pop_016[pop_016['year'] <= 2010]
         pop_y_after = pop_017[pop_017['year'] > 2010]
 
-        pop_young = pop_y_before.append(pop_y_after, sort=True).reset_index(drop=True)
-        pop_adult = pop_young.merge(pop_all, how='left', on=['id', 'year'])
-        pop_adult['population'] = pop_adult['population_y'] - pop_adult['population_x']
-
-        return pop_adult[['id', 'population', 'year']]
+        return pd.concat([pop_y_before, pop_y_after], sort=True) \
+            .reset_index(drop=True) \
+            .merge(pop_all, how='left', on=['id', 'year']) \
+            .assign(population=lambda x: x.population_y + x.population_x) \
+            .filter(items=['id', 'population', 'year'])
     except:
         print("ERROR: Cannot get adult population!")
         raise
@@ -247,7 +246,8 @@ def __get_population_juvenile():
         pop_before = pop_1016[pop_1016['year'] <= 2010]
         pop_after = pop_1017[pop_1017['year'] > 2010]
 
-        return pop_before.append(pop_after, sort=True).reset_index(drop=True)
+        return pd.concat([pop_before, pop_after], sort=True) \
+            .reset_index(drop=True)
     except:
         print("ERROR: Cannot get juvenile population!")
         raise
@@ -278,20 +278,20 @@ def __generate_standard_data(dataset, id):
         else:
             pop = __get_population(type_pop)
 
-        df = __get_data_with_county(county, data, dataset, variable, id)
-        df = df.merge(pop, how='left', on=['year', 'id'])
+        df = __get_data_with_county(county, data, dataset, variable, id) \
+            .merge(pop, how='left', on=['year', 'id'])
         list_col = df.columns.tolist()
         df = df[list_col[:8] + [list_col[-1]] + list_col[8:-1]]
-
+        
         if unit_rate:
             list_val = df.columns.tolist()[9:]
             for val in list_val:
                 val_rate = round(df[val] / df['population'] * unit_rate, 1)
                 df[f'{val}_rate'] = val_rate
-        
+
         return df
     except:
-        print(f"ERROR: Cannot generate standard type data for dataset id: {id}!")
+        print(f"ERROR: Cannot generate standard type data for dataset ID {id}!")
         raise
 
 def __generate_nonstandard_data(dataset, id):
@@ -311,9 +311,12 @@ def __generate_nonstandard_data(dataset, id):
             data = read_table('Data')
             variable = read_table('Variable')
             
-            df = __get_data_with_county(county, data, dataset, variable, id)
-            df['unemployment_rate'] = df['unemployed'] / df['labor_force_population'] * 100
-            df['unemployment_rate'] = df['unemployment_rate'].round(1)
+            df = __get_data_with_county(county, data, dataset, variable, id) \
+                .assign(
+                    unemployment_rate=\
+                        lambda x: x.unemployed / x.labor_force_population * 100
+                ) \
+                .assign(unemployment_rate=lambda x: x.unemployment_rate.round(1))
             list_col = df.columns.tolist()
             
             return df[list_col[:8] + ['labor_force_population', 'employed'] + list_col[10:]]
@@ -322,7 +325,7 @@ def __generate_nonstandard_data(dataset, id):
         elif name == 'illinois_population_old':
             return read_view('vIllinoisPopulationOld')
     except:
-        print(f"ERROR: Cannot generate non-standard type data for dataset ID: {id}!")
+        print(f"ERROR: Cannot generate non-standard type data for dataset ID {id}!")
         raise
 
 def generate_data(id):
@@ -341,10 +344,12 @@ def generate_data(id):
     """
     try:
         dataset = read_table('Dataset')
-        title = dataset[dataset['id'] == id]['name'].tolist()[0]
+        dataset_for_id = dataset[dataset['id'] == id]
 
-        active = dataset[dataset['id'] == id]['active'].tolist()[0] == 1
-        standard = dataset[dataset['id'] == id]['standard'].tolist()[0] == 1
+        title = dataset_for_id['name'].tolist()[0]
+
+        active = dataset_for_id['active'].tolist()[0] == 1
+        standard = dataset_for_id['standard'].tolist()[0] == 1
         
         if active:
             if standard:
