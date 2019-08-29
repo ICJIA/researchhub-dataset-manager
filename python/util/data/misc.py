@@ -34,6 +34,15 @@ def get_year_max(id):
     except:
         raise
 
+def handle_no_record(df):
+    """Give value 0 to counties without records."""
+    all_county = pd.Series([i for i in range(1, 102+1)], name='fk_data_county')
+    return df \
+        .merge(all_county.to_frame(), how="outer") \
+        .fillna(value={'value': 0}) \
+        .fillna(method='ffill') \
+        .sort_values(by=['year', 'fk_data_variable', 'fk_data_county'])
+
 def read_mssql(db, tbl, columns=None, condition=None):
     """Read from the MS SQL Server a simple select query result. 
     

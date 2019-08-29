@@ -1,6 +1,6 @@
 import pandas as pd
 
-from util.data.misc import data_colnames, get_list_variable_id, get_year_max, read_mssql
+from util.data.misc import data_colnames, get_list_variable_id, get_year_max, handle_no_record, read_mssql
 from util.database.main import read_table
 
 __id = 300
@@ -97,6 +97,6 @@ def prepare_idoc_data(year=None):
             year = get_year_max(__id) + 1
         df = __read_idoc_from_mssql(year)
         
-        return __transform_idoc(df)
+        return handle_no_record(__transform_idoc(df))
     except:
         raise

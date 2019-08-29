@@ -1,5 +1,5 @@
 import pandas as pd
-from util.data.misc import CannotUpdateError, data_colnames, get_year_max, read_mssql
+from util.data.misc import CannotUpdateError, data_colnames, get_year_max, handle_no_record, read_mssql
 
 __id = 200
 
@@ -57,6 +57,6 @@ def prepare_chri_data(year=None):
             year = get_year_max(__id) + 1
         df = __read_chri_from_mssql(year)
         
-        return __transform_chri(df)
+        return handle_no_record(__transform_chri(df))
     except:
         raise

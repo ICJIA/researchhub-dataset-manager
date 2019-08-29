@@ -1,6 +1,6 @@
 import pandas as pd
 from util.data.misc import (CannotUpdateError, data_colnames,
-    get_list_variable_id, get_year_max, read_mssql)
+    get_list_variable_id, get_year_max, handle_no_record, read_mssql)
 
 __id_admit = 400
 __id_exit = 401
@@ -136,6 +136,6 @@ def prepare_idjj_data(year=None):
         df_a = __read_idjj_from_mssql(year)
         df_e = __read_idjj_from_mssql(year, exit=True)
         
-        return __transform_and_combine_idjj(df_a, df_e)
+        return handle_no_record(__transform_and_combine_idjj(df_a, df_e))
     except:
         raise
