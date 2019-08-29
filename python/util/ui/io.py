@@ -35,15 +35,11 @@ def __delete_bridgepop_old_records():
         conn = Conn()
         cursor = conn.cursor()
         
-        year_min_t = cursor \
-            .execute(f'SELECT MIN(year) FROM {name_temp};') \
+        year_min_t, year_max_t = cursor \
+            .execute(f'SELECT MIN(year), MAX(year) FROM {name_temp};') \
             .fetchone()
         
-        year_max_t = cursor \
-            .execute(f'SELECT MAX(year) FROM {name_temp};') \
-            .fetchone()
-        
-        year_max_m = cursor \
+        year_max_m, = cursor \
             .execute(f'SELECT MAX(year) FROM {name_perm};') \
             .fetchone()
 
@@ -66,9 +62,9 @@ def __delete_ucr_old_records():
         cursor = conn.cursor()
         
         sql = f'SELECT max(year) FROM Data WHERE fk_data_variable = 50000'
-        year = cursor \
+        year, = cursor \
             .execute(sql) \
-            .fetchone()[0]
+            .fetchone()
         
         ucr_var = ', '.join([str(x) for x in dict_ucr_variable.values()][:-1])
         sql = f'DELETE FROM Data WHERE year = {year} AND fk_data_variable IN ({ucr_var})'
