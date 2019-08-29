@@ -30,35 +30,28 @@ def __extract_from_res(res):
     except:
         raise
 
-def __fetch_from_url(v, y):
-    """Fetch a single-year bridgepop estimates for Illinois.
+def __fetch_from_url(url):
+    """Fetch a single-year bridgepop estimates for Illinois."""
+    print(f"NOTE: Downloading from '{url}'...")
+    res = requests.get(url)
 
-    This function fetches a single-year bridgepop estimates data from the source
-    ftp server, which contains the Bridged-Race Population Estimates datasets
-    prepared by the National Center for Health Statistics of the Centers for
-    Disease Control and Prevention.
+    if res.status_code == 200:
+        return res
+    elif res.status_code == 404:
+        raise CannotUpdateError('ERROR: BridgePop table may be already up to date!')
+    else:
+        res.raise_for_status()
 
+def __build_url(v, y):
+    """Return url for a single-year bridgepop estimates for Illinois.
+    
     Args:
         v (int): Version year (YYYY) for bridgepop data.
         y (int): Estimate year (yy) for bridgepop data.
-
-    Returns:
-        pandas.DataFrame: Single year bridgepop estimates for Illinois.
-    
     """
     jul_if_year_zero = '_jul' if y % 10 == 0 else ''
-    target = f'pcen_v{v}_y{y}{jul_if_year_zero}.txt.zip'
-    
-    url = f'https://www.cdc.gov/nchs/nvss/bridged_race/{target}'
-    
-    res = requests.get(url)
-    
-    if res.status_code == 200:
-        return __filter_illinois(__extract_from_res(res))
-    elif res.status_code == 404:
-        raise CannotUpdateError('ERROR: BridgePop table is already up to date!')
-    else:
-        res.raise_for_status()
+    filename = f'pcen_v{v}_y{y}{jul_if_year_zero}.txt.zip'
+    return f'https://www.cdc.gov/nchs/nvss/bridged_race/{filename}'
 
 def __transform_bridgepop(df):
     """Transform bridgepop data into the proper format.
@@ -101,7 +94,8 @@ def prepare_bridgepop_data(year=None):
         out = pd.DataFrame()
         for y_i in y_range:
             try:
-                out = out.append(__fetch_from_url(v, y_i))
+                url = __build_url(v, y_i)
+                out = out.append(__fetch_from_url(url))
             except:
                 raise
 
