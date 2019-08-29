@@ -39,7 +39,7 @@ def __get_dataset_data(data, variable, id):
         filter2 = data['fk_data_county'].isin(list(range(103)))
         return data[filter1 & filter2]
     except:
-        print(f'ERROR: Failed to filter Data for dataset id: {id}')
+        print(f'ERROR: Failed to filter Data for dataset ID {id}')
         raise
 
 def __merge_count_county(df, county, variable, id):
@@ -127,7 +127,7 @@ def __get_data_with_county(county, data, dataset, variable, id):
 
         return __pivot_merged(df)
     except:
-        print(f'ERROR: Cannot get data for a dataset id: {id}')
+        print(f'ERROR: Cannot get data for a dataset ID {id}')
         raise
 
 def __get_population_new(type_pop):
@@ -291,7 +291,7 @@ def __generate_standard_data(dataset, id):
         
         return df
     except:
-        print(f"ERROR: Cannot generate standard type data for dataset ID {dataset}!")
+        print(f"ERROR: Cannot generate standard type data for dataset id: {id}!")
         raise
 
 def __generate_nonstandard_data(dataset, id):
@@ -322,7 +322,7 @@ def __generate_nonstandard_data(dataset, id):
         elif name == 'illinois_population_old':
             return read_view('vIllinoisPopulationOld')
     except:
-        print(f"ERROR: Cannot generate non-standard type data for dataset ID {dataset}!")
+        print(f"ERROR: Cannot generate non-standard type data for dataset ID: {id}!")
         raise
 
 def generate_data(id):
