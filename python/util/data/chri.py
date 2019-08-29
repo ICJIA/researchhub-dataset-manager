@@ -1,5 +1,5 @@
 import pandas as pd
-from util.data.misc import CannotUpdateError, data_colnames, get_year_max, handle_no_record, read_mssql
+from util.data.misc import CannotUpdateError, data_colnames, get_list_variable_id, get_year_max, handle_no_record, read_mssql
 
 __id = 200
 
@@ -24,7 +24,7 @@ def __transform_chri(df):
         df.loc[:, 'fk_data_county'] = df['county'].astype(int)
 
         c = df['arrestage'].isin(range(10,17+1))
-        df.loc[:,'fk_data_variable'] = __id
+        df.loc[:,'fk_data_variable'] = get_list_variable_id(__id)[0]
         g = ['fk_data_variable', 'year', 'fk_data_county']
         
         df = df[c] \
