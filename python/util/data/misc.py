@@ -14,6 +14,13 @@ data_colnames = [
     'value'
 ]
 
+def __build_sql(db, tbl, columns, condition):
+    """Build a SQL statement from parameters."""
+    columns = '*' if columns is None else columns
+    condition = '' if condition is None else f' WHERE {condition}'
+
+    return f'SELECT {columns} FROM {db}.dbo.{tbl}' + condition
+
 def get_list_dataset_id(group):
     """Get a list of dataset ID values for the specified group."""
     dataset = read_table('Dataset')
@@ -58,12 +65,10 @@ def read_mssql(db, tbl, columns=None, condition=None):
     try:
         params = f'DRIVER=SQL Server;SERVER=SPAC2SVR;PORT=1433;DATABASE={db}'
         conn = pyodbc.connect(params)
-
-        columns = columns if columns is not None else '*'
-        sql = f'SELECT {columns} FROM {db}.dbo.{tbl}'
-        sql += f' WHERE {condition}' if condition is not None else ''
-        df = pd.read_sql(sql, conn)
-
+        df = pd.read_sql(
+            sql=__build_sql(db, tbl, columns, condition),
+            con=conn
+        )
         conn.close()
 
         if df.empty:
