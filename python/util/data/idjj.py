@@ -10,13 +10,14 @@ __id_exit_older = 403
 def __read_idjj_from_mssql(year, exit=False):
     """Read from the MS SQL Server the specified year's IDOC data."""
     try:
-        database = 'PrisonMain'
-        tbl = 'IDJJ_exits' if exit else 'IDJJ_Admissions'
-        cols = 'Age, SFY, County, sex, race, admtypo, OFFTYPE9, hclass'
-        cols = 'Exit' + cols if exit else cols
-        condition = f'SFY = {year}'
-
-        return read_mssql(database, tbl, cols, condition)
+        columns = 'Age, SFY, County, sex, race, admtypo, OFFTYPE9, hclass'
+        
+        return read_mssql(
+            db='PrisonMain',
+            tbl='IDJJ_exits' if exit else 'IDJJ_Admissions',
+            columns='Exit' + columns if exit else columns,
+            condition=f'SFY = {year}'
+        )
     except:
         raise
 

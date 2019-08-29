@@ -8,12 +8,12 @@ __id = 300
 def __read_idoc_from_mssql(year):
     """Read from the MS SQL Server the specified year's IDOC data."""
     try:
-        database = 'PrisonMain'
-        tbl = 'PrisonAdmits'
-        cols = 'FiscalYr, COMCNTY, SEX, ADMTYPO3, OFFTYPE2, OFFTYPE3'
-        condition = f'FiscalYr = {year}'
-
-        return read_mssql(database, tbl, cols, condition)
+        return read_mssql(
+            db='PrisonMain',
+            tbl='PrisonAdmits',
+            columns='FiscalYr, COMCNTY, SEX, ADMTYPO3, OFFTYPE2, OFFTYPE3',
+            condition=f'FiscalYr = {year}'
+        )
     except:
         raise
 

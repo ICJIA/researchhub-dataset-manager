@@ -6,12 +6,12 @@ __id = 200
 def __read_chri_from_mssql(year):
     """Read from the MS SQL Server the specified year's CHRI data."""
     try:
-        database = 'AnnualPulls'
-        tbl = 'Arrests'
-        cols = 'ArrestYear, ArrestAge, EventORI'
-        condition = f'ArrestYear = {year}'
-
-        return read_mssql(database, tbl, cols, condition)
+        return read_mssql(
+            db='AnnualPulls',
+            tbl='Arrests',
+            columns='ArrestYear, ArrestAge, EventORI',
+            condition=f'ArrestYear = {year}'
+        )
     except:
         raise
 
