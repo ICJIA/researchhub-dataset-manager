@@ -73,7 +73,7 @@ def update_dataset_years(pop=False):
             dataset_new.loc[dataset_new['id'] == id, 'year_max'] = year_max
         
         if pop:
-            id = None
+            id = 900
             year = read_table('BridgePop')['year']
             update_years(year, id)
         else:
