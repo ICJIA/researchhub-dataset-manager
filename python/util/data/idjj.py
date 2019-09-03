@@ -7,7 +7,7 @@ __id_exit = 401
 __id_admit_older = 402
 __id_exit_older = 403
 
-def __read_idjj_from_mssql(year, exit=False):
+def __read_idjj_from_mssql(year, exit):
     """Read from the MS SQL Server the specified year's IDOC data."""
     try:
         columns = 'Age, SFY, County, sex, race, admtypo, OFFTYPE9, hclass'
@@ -20,6 +20,12 @@ def __read_idjj_from_mssql(year, exit=False):
         )
     except:
         raise
+
+def __read_all_idjj(year):
+    return {
+        'df_admit': __read_idjj_from_mssql(year, exit=False),
+        'df_exit': __read_idjj_from_mssql(year, exit=True)
+    }
 
 def __get_list_variable_id_idjj(exit, older):
     """Get a list of variable ID values for the specified IDJJ data type."""
@@ -69,7 +75,7 @@ def __get_idjj_criteria(df, older):
     
     return c_age, c_new, c_heads, c_tails
 
-def __transform_idjj(df, exit=False, older=False):
+def __transform_idjj(df, exit, older):
     """Transform the specificed IDJJ data."""
     try:
         df.columns = ['age', 'year', 'fk_data_county'] + df.columns.tolist()[3:]
@@ -95,18 +101,15 @@ def __transform_idjj(df, exit=False, older=False):
     except:
         raise
 
-def __transform_and_combine_idjj(df_admit, df_exit):
-    """Combine all transformed IDJJ data."""
+def __transform_all_idjj(df_admit, df_exit):
+    """Return a list of all transformed IDJJ data."""
     try:
-        return pd.concat(
-            [
-                __transform_idjj(df_admit),
-                __transform_idjj(df_admit, older=True),
-                __transform_idjj(df_exit, exit=True),
-                __transform_idjj(df_exit, exit=True, older=True)
-            ],
-            ignore_index=True
-        )
+        return [
+            __transform_idjj(df_admit, exit=False, older=False),
+            __transform_idjj(df_admit, exit=False, older=True),
+            __transform_idjj(df_exit, exit=True, older=False),
+            __transform_idjj(df_exit, exit=True, older=True)
+        ]
     except:
         raise
 
@@ -129,11 +132,9 @@ def prepare_idjj_data(year=None):
     """
     try:
         y = get_year_max(__id_admit) + 1 if year is None else year
+        list_transformed = __transform_all_idjj(**__read_all_idjj(y))
         
-        return __transform_and_combine_idjj(
-                df_admit=__read_idjj_from_mssql(y),
-                df_exit=__read_idjj_from_mssql(y, exit=True)
-            ) \
+        return pd.concat(list_transformed, ignore_index=True) \
             .pipe(handle_no_record)
     except:
         raise
