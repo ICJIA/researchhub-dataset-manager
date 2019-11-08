@@ -306,7 +306,7 @@ def __generate_nonstandard_data(dataset, id):
     try:
         name = dataset[dataset['id'] == id]['name'].iloc[0]
         
-        if name == 'employment':
+        if name == 'county_unemployment_statistics':
             county = read_table('County')
             data = read_table('Data')
             variable = read_table('Variable')
@@ -318,7 +318,7 @@ def __generate_nonstandard_data(dataset, id):
                 ) \
                 .assign(unemployment_rate=lambda x: x.unemployment_rate.round(1))
             list_col = df.columns.tolist()
-            
+
             return df[list_col[:8] + ['labor_force_population', 'employed'] + list_col[10:]]
         elif name == 'illinois_population':
             return read_view('vIllinoisPopulation')
