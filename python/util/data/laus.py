@@ -8,7 +8,7 @@ __id = 605
 def __fetch_laus_from_url(year):
     """Fetch from online the given year's LAUS data."""
     try:
-        url = f'http://www.ides.illinois.gov/LMI/Local%20Area%20Unemployment%20Statistics%20LAUS/historical/{year}-moaa.xls'
+        url = f'http://www2.illinois.gov/ides/LMI/Local%20Area%20Unemployment%20Statistics%20LAUS/historical/{year}-moaa.xls'
         return pd.read_excel(url, skiprows=6)
     except HTTPError as e:
         if e.code == 404:
@@ -31,8 +31,6 @@ def __transform_laus(df):
     """Transform LAUS data into the proper format."""
     try:
         list_variable_id = [str(id) for id in get_list_variable_id(__id)]
-        c_has_fips = df['fips'].na()
-        c_month_13 = df['month'] == 13
         colnames = [
             'fips',
             'area',
@@ -44,9 +42,12 @@ def __transform_laus(df):
             'rate'
         ]
         colnames2 = ['fips', 'year'] + list_variable_id
+        
+        df2 = df.set_axis(colnames, axis='columns', inplace=False)
+        c_has_fips = df2['fips'].notna()
+        c_month_13 = df2['month'] == 13
 
-        return df \
-            .set_axis(colnames, axis='columns', inplace=False) \
+        return df2 \
             .loc[c_has_fips & c_month_13] \
             .drop(columns=['area', 'month', 'rate']) \
             .set_axis(colnames2, axis='columns', inplace=False) \
