@@ -49,7 +49,7 @@ def __transform_laus(df):
 
         return df2 \
             .loc[c_has_fips & c_month_13] \
-            .drop(columns=['area', 'month', 'rate']) \
+            .filter(items=['fips', 'year', 'force', 'unemployed', 'employed']) \
             .set_axis(colnames2, axis='columns', inplace=False) \
             .pipe(__pivot_laus_variable, value_vars=list_variable_id) \
             .assign(fk_data_county=lambda x: (x.fips + 1) / 2) \
