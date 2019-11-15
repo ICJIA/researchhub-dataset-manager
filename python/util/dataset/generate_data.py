@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from math import nan
 
 from util.database.dbread import read_table, read_view
 from util.dataset.misc import mask_less_than_10
@@ -92,7 +93,10 @@ def __pivot_merged(df):
     try:
         list_ix = [c for c in df.columns.tolist() if c not in ['name', 'value']]
 
-        df = df.pivot_table(index=list_ix, columns='name', values='value')
+        df = df \
+            .fillna(-9999) \
+            .pivot_table(index=list_ix, columns='name', values='value') \
+            .replace(-9999, nan)
         df.columns.name = None
 
         return df.reset_index()
