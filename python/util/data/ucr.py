@@ -66,14 +66,22 @@ def __fetch_ucr_for_year(year, which):
         yy = str(year)[2:]
         yy_pre = str(year - 1)[2:]
         
+        # dict_which = {
+        #     'index': 'CrimeData',
+        #     'domestic': 'DomesticOffenses',
+        #     'hate': 'HateCrime',
+        #     'school': 'SchoolIncidents'
+        # }
         dict_which = {
-            'index': 'CrimeData',
-            'domestic': 'DomesticOffenses',
-            'hate': 'HateCrime',
-            'school': 'SchoolIncidents'
+            'index': 'Index%20Crime',
+            'domestic': 'Domestic%20Offenses',
+            'hate': 'Hate%20Crime',
+            'school': 'School%20Incidents'
         }
 
-        filename = f'{dict_which[which]}_{yy}_{yy_pre}.xlsx'
+        # filename = f'{dict_which[which]}_{yy}_{yy_pre}.xlsx'
+        years = f'{year}-{yy_pre}' if which != 'school' else year
+        filename = f'{years}%20{dict_which[which]}.xlsx'
         url = f'http://www.isp.state.il.us/docs/cii/cii{yy}/ds/{filename}'
 
         return __fetch_ucr_from_url(url)
@@ -136,9 +144,12 @@ def __transform_ucr_school(df, year):
             'intimidation'
         ]
 
+        cols_to_drop = [c for c in ['ori', 'agency_name'] if c in df.index]
+
         return df \
+            .assign(year=year) \
             .pipe(__select_of_year, year) \
-            .drop(['ori', 'agency_name'], axis=1) \
+            .drop(cols_to_drop, axis=1) \
             .groupby(['year', 'county']) \
             .sum() \
             .filter(items=school_cols) \
