@@ -1,5 +1,5 @@
 import atexit
-from util import (handle_task_result, prompt_for_task_input, reset_env,
+from ui import (handle_task_result, prompt_for_task_input, reset_env,
     task_data, task_dataset, task_population)
 
 reset_env = atexit.register(reset_env)
