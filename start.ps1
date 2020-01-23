@@ -1,3 +1,3 @@
 .\venv\Scripts\activate
-python python
+python app
 deactivate
