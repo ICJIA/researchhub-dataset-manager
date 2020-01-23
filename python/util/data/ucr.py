@@ -1,6 +1,5 @@
 import pandas as pd
 import re
-from xlrd import XLRDError
 
 from util.data.misc import CannotUpdateError, data_colnames, get_list_dataset_id, get_year_max
 from util.database.dbread import read_table
@@ -56,7 +55,7 @@ def __fetch_ucr_from_url(url):
     """Fetch from online the given year's UCR data."""
     try:
         return pd.read_excel(url)
-    except XLRDError:
+    except ImportError:
         raise CannotUpdateError("ERROR: Uniform Crime Report data is already up to date!")
     except:
         raise
