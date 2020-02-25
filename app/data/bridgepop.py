@@ -33,10 +33,11 @@ def __fetch_from_url(url):
     """Fetch a single-year bridgepop estimates for Illinois."""
     print(f"NOTE: Downloading from '{url}'...")
     res = requests.get(url)
+    is_zipfile = res.headers['Content-Type'] == 'application/x-zip-compressed'
 
-    if res.status_code == 200:
+    if res.status_code == 200 and is_zipfile:
         return res
-    elif res.status_code == 404:
+    elif res.status_code == 404 or not is_zipfile:
         raise CannotUpdateError('ERROR: BridgePop table may be already up to date!')
     else:
         res.raise_for_status()
