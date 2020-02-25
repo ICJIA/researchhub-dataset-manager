@@ -7,7 +7,7 @@ reset_env = atexit.register(reset_env)
 def main():
     reset_env(exit=False)
     
-    welcome_msg = "\n### WELCOME TO ICJIA WEB DATASET MAINTENANCE TOOL ###" +\
+    welcome_msg = "\n### WELCOME TO ICJIA RESEARCH HUB DATASET MANAGER ###" +\
         "\n\nYou can safely exit this program by typing 'q' and" +\
         "  press Enter whenever asked for your input." +\
         "\n***WARNING: Trying to forcibly quit the program might cause" +\

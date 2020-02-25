@@ -6,6 +6,7 @@ from data.jail import prepare_jail_data
 from data.laus import prepare_laus_data
 from data.sapie import prepare_poverty_data
 from data.ucr import dict_ucr_variable, prepare_ucr_data
+from data.misc import CannotUpdateError
 
 from database.conn import Conn
 from database.main import create_temp, drop_temp, update_table_with_temp
@@ -86,6 +87,9 @@ def create_temp_bridgepop():
         write_temp(df, name)
 
         return True
+    except CannotUpdateError as e:
+        print(e)
+        return False
     except:
         raise
 
