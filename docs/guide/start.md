@@ -27,7 +27,7 @@ Alternatively, you can first move to the directory where the program is stored a
 
 Either way, the `.\start` command will execute the program. After a few seconds, the interface to the Dataset Manager will appear as shown in the following image:
 
-![Microsoft Powershell screenshot](/assets/img/screenshot.png)
+<img :src="$withBase('/assets/img/screenshot.png')" alt="Microsoft Powershell screenshot">
 
 **Congratulations**:tada: Now you are ready to get some work done!
 

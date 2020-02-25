@@ -13,7 +13,7 @@ The Illinois Criminal Justice Information Authority (ICJIA) Research & Analysis 
 
 You can use the Research Hub Dataset Manager to update the underlying database and generate the datasets for [ICJIA Research Hub](https://icjia.illinois.gov/researchhub).
 
-![PowerShell screenshot](/assets/img/screenshot.png)
+<img :src="$withBase('/assets/img/screenshot.png')" alt="PowerShell screenshot">
 
 ::: warning NOTE
 Must have Python >=3.6 installed to use the Dataset Manager. See [the "Prerequsites" Section](/guide/prerequisites.md) of the Guide to find more about the proper preparation steps for using the Dataset Manager.

@@ -12,7 +12,7 @@ The Web Dataset Maintenance Tool uses SQLite as its database engine. SQLite is f
 
 ## DB Browser for SQLite
 
-![DB Browser for SQLite logo](/assets/img/sqlitebrowser_logo.png)
+<img :src="$withBase('/assets/img/sqlitebrowser_logo.png')" alt="DB Browser for SQLite logo">
 
 Although a SQLite database file can be accessed and modified programmatically, it is still conveninent to use a graphical tool to browse the database file and make minor changes if needed.
 
@@ -22,7 +22,7 @@ For that, the current documentation recommends DB Browser for SQLite, previously
 
 Once DB Browser is downloaded and installed, you can use it to open SQLite database file (`.db`). The following screenshot image shows the graphical user interface to a `.db` file:
 
-![Screenshot of DB for SQLite GUI](/assets/img/database_1.png)
+<img :src="$withBase('/assets/img/database_1.png')" alt="Screenshot of DB for SQLite GUI">
 
 ::: tip TIP
 To find more about using the DB Browser for SQLite, visit [its official documentation Wiki pages on GitHub](https://github.com/sqlitebrowser/sqlitebrowser/wiki).

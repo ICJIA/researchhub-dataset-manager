@@ -25,7 +25,7 @@ A data comma-seperated values (`.csv`) file is generated using the records saved
 
 In addition to the common columns, most data files include columns for both raw count values and population-adjusted rate values for relevant data. See the following image for an example of a data file opened in Microsoft Excel:
 
-![Data example](/assets/img/data.png)
+<img :src="$withBase('/assets/img/data.png')" alt="Data example">
 
 ::: warning NOTE
 Although the image above shows the file in Microsoft Excel, the file itself is a comma-separated values (`.csv`) text file that can be opened using any text editor, including Notepad.

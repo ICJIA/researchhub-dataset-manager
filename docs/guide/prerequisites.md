@@ -49,7 +49,7 @@ You must be logged on with your personal account when editing the PATH environme
 
 Once you apply the change, Python should be accessible from anywhere on your PC. You may test this by opening a command-line tool, and execute `python --version` as in the following image:
 
-![Microsoft Powershell screenshot](/assets/img/prerequisites_1.png)
+<img :src="$withBase('/assets/img/prerequisites_1.png')" alt="Microsoft Powershell screenshot">
 
 If the relevant output is printed without causing any error, Python is successfully added to PATH.
 
