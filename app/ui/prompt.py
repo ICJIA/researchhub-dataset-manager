@@ -55,7 +55,7 @@ def prompt_for_group_input(purpose, auto=False):
     for i in range_choice:
         msg += f'\n- {i} - {dict_group[i]}.'
 
-    prompt = "group"
+    prompt = "Data group"
     msg, list_choice = complete_choices(msg, range_choice, prompt)
     errmsg = "ERROR: Invalid choice for group! Try again."
     isvalid = lambda x: x in list_choice
