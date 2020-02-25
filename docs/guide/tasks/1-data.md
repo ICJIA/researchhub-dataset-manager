@@ -78,14 +78,14 @@ The following example illustrates the process of automatically updating the "Dat
 
 In this scenario, the program generates temporary outputs but the user decides _not_ to finish the task, exiting the program before updating the database.
 
-![Example 1-1](/assets/img/guide_1_1.png)
+<img :src="$withBase('/assets/img/guide_1_1.png')" alt="Example 1-1">
 
-![Example 1-2](/assets/img/guide_1_2.png)
+<img :src="$withBase('/assets/img/guide_1_2.png')" alt="Example 1-2">
 
-![Example 1-3](/assets/img/guide_1_3.png)
+<img :src="$withBase('/assets/img/guide_1_3.png')" alt="Example 1-3">
 
-![Example 1-4](/assets/img/guide_1_4.png)
+<img :src="$withBase('/assets/img/guide_1_4.png')" alt="Example 1-4">
 
-![Example 1-5](/assets/img/guide_1_5.png)
+<img :src="$withBase('/assets/img/guide_1_5.png')" alt="Example 1-5">
 
-![Example 1-6](/assets/img/guide_1_6.png)
+<img :src="$withBase('/assets/img/guide_1_6.png')" alt="Example 1-6">

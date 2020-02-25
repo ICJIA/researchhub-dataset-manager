@@ -29,12 +29,12 @@ The following example illustrates the process of generating the `ucr_index_offen
 
 In this scenario, the dataset is successfully generated and stored in `/datasets/`. The user then chooses to continue to the next task.
 
-![Example 3-1](/assets/img/guide_3_1.png)
+<img :src="$withBase('/assets/img/guide_3_1.png')" alt="Example 3-1">
 
-![Example 3-2](/assets/img/guide_3_2.png)
+<img :src="$withBase('/assets/img/guide_3_2.png')" alt="Example 3-2">
 
-![Example 3-3](/assets/img/guide_3_3.png)
+<img :src="$withBase('/assets/img/guide_3_3.png')" alt="Example 3-3">
 
-![Example 3-4](/assets/img/guide_3_4.png)
+<img :src="$withBase('/assets/img/guide_3_4.png')" alt="Example 3-4">
 
-![Example 3-5](/assets/img/guide_3_5.png)
+<img :src="$withBase('/assets/img/guide_3_5.png')" alt="Example 3-5">

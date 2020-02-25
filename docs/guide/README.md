@@ -24,7 +24,7 @@ The Tool is designed to automate as much as possible the work of fetching new re
 
 ### Simple workflow
 
-![Wokflow diagram](/assets/img/workflow.png)
+<img :src="$withBase('/assets/img/workflow.png')" alt="Wokflow diagram">
 
 The Tool provides simple interface to make the work of dataset maintenance as easy as typing an input letter and pressing enter.
 
@@ -32,7 +32,7 @@ The program does the work by connecting to a variety of data sources, thus relie
 
 ### Enabling collaboration
 
-![Collaboration diagram](/assets/img/collaboration.png)
+<img :src="$withBase('/assets/img/collaboration.png')" alt="Collaboration diagram">
 
 The simple interface makes it possible for the R&A staff to collaborate efficiently and keep the published data products up-to-date. No more waiting until the single mastermind returns from his or her sweet vacation to make the latest data available for the public.
 

@@ -64,10 +64,10 @@ The following example illustrates the process of automatically updating the "Bri
 
 In this scenario, the "BridgePop" table is already up-to-date, so the program throws an error.
 
-![Example 2-1](/assets/img/guide_2_1.png)
+<img :src="$withBase('/assets/img/guide_2_1.png')" alt="Example 2-1">
 
-![Example 2-2](/assets/img/guide_2_2.png)
+<img :src="$withBase('/assets/img/guide_2_2.png')" alt="Example 2-2">
 
-![Example 2-3](/assets/img/guide_2_3.png)
+<img :src="$withBase('/assets/img/guide_2_3.png')" alt="Example 2-3">
 
-![Example 2-4](/assets/img/guide_2_4.png)
+<img :src="$withBase('/assets/img/guide_2_4.png')" alt="Example 2-4">
