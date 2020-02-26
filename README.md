@@ -5,3 +5,7 @@
 (For internal use only.) A simple Python command-line app to manage datasets for [ICJIA Research Hub](https://icjia.illinois.gov/researchhub). The current repository does not include all necessary components for the Manager app to work properly.
 
 > NOTE: The Manager app and its documentation have been significantly refactored and updated. Go to [this repository](https://github.com/bobaekang/icjia-web-dataset-maintenance-tool/) for the original verison.
+
+## [Documentation](https://icjia.github.io/researchhub-dataset-manager)
+
+**Powered by** [<img alt="VuePress logo" src="https://vuepress.vuejs.org/hero.png" height="25">](https://vuepress.vuejs.org/)
