@@ -58,7 +58,7 @@ module.exports = {
         "/dev-guide/misc"
       ]
     },
-    repo: "icjia/icjia-web-dataset-maintenance-tool",
+    repo: "icjia/researchhub-dataset-manager",
     repoLabel: "GitHub",
     lastUpdated: "Last Updated"
   }
