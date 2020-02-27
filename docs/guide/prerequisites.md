@@ -4,7 +4,7 @@
 Make sure to read the current page and follow all the steps below _prior to_ trying Research Hub Dataset Manager.
 :::
 
-## Download and install Python via Anaconda
+## Download and install Python
 
 ### What is Python?
 
